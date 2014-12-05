@@ -5,6 +5,7 @@ import com.quantrix.dictionary.utils.FileIO;
 import com.quantrix.dictionary.utils.IO;
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +26,7 @@ public class DictionaryDAO extends AbstractDAO<Word> implements IDAO<Word> {
 
     public void setFileIO(IO fileIO){
         this.fileIO = fileIO;
+        initDictMap();
     }
 
     /**
@@ -39,13 +41,6 @@ public class DictionaryDAO extends AbstractDAO<Word> implements IDAO<Word> {
 
         return dictMap.get(query.toLowerCase());
 
-        /*
-        if (dictMap.containsKey(query.toLowerCase())){
-            return dictMap.get(query.toLowerCase());
-        } else {
-            //Execute fuzzy match query operation
-        }
-        */
     }
 
     /**
@@ -67,6 +62,7 @@ public class DictionaryDAO extends AbstractDAO<Word> implements IDAO<Word> {
      *
      * Executes a local search query for a word based on its ID value
      */
+    @Override
     public Word get(int wordId){
         for (Word word : dictMap.values()){
             if (word.getId() == wordId)
@@ -149,7 +145,7 @@ public class DictionaryDAO extends AbstractDAO<Word> implements IDAO<Word> {
         fileIO.writeToDataFile(dictMap);
     }
 
-    public void initDictMap(){
+    private void initDictMap(){
         dictMap = fileIO.loadDataFile();
     }
 
@@ -157,7 +153,7 @@ public class DictionaryDAO extends AbstractDAO<Word> implements IDAO<Word> {
         DictionaryDAO dao = DictionaryDAO.getInstance();
         FileIO fileIO = FileIO.getInstance();
         dao.setFileIO(fileIO);
-        dao.initDictMap();
+        //dao.initDictMap();
 
         //get and print first entry in data file
         Word firstWord = dao.get(1);
@@ -168,6 +164,12 @@ public class DictionaryDAO extends AbstractDAO<Word> implements IDAO<Word> {
         dao.create(newWord);
         Word retrieveNewWord = dao.get("daoTest");
         System.out.println("Retrive daoTest\n" + retrieveNewWord.toString());
+
+        Map<String, Word> wordMap = dao.getAll();
+
+        System.out.println("All values in dictionary:");
+        for (Word word : wordMap.values())
+            System.out.println(word.toString());
 
         //this should return as null
         Word failedGet = dao.get("someteststring");

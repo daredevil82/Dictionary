@@ -6,14 +6,17 @@ package com.quantrix.dictionary.dao;
  * Basic DAO interface
  */
 
-import java.util.List;
+import com.quantrix.dictionary.utils.IO;
+
 import java.util.Map;
 
 public interface IDAO<T> {
 
+    void setFileIO(IO fileIO);
+
     T get(String query);
     T get(T query);
-
+    T get(int id);
     Map<String, T> getAll();
 
     T create(T entity);
