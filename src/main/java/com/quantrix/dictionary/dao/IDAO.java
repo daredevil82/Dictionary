@@ -7,13 +7,14 @@ package com.quantrix.dictionary.dao;
  */
 
 import java.util.List;
+import java.util.Map;
 
 public interface IDAO<T> {
 
     T get(String query);
     T get(T query);
 
-    List<T> getAll();
+    Map<String, T> getAll();
 
     T create(T entity);
     T update(T entity);

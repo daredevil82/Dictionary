@@ -16,6 +16,8 @@ import java.io.Serializable;
 public class Word implements Serializable{
 
     private int wordId;
+
+    //immutable - all update oeprations should not modify this field.
     private String wordName;
     private String wordDefinition;
     private DateTime dateCreated;

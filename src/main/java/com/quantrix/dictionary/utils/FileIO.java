@@ -21,7 +21,7 @@ import java.util.Map;
  * Enforces singleton pattern
  *
  */
-public class FileIO {
+public class FileIO implements IO{
 
     private static final String DICTIONARYFILE = "dictData.dat";
     private static final FileIO INSTANCE = new FileIO();
@@ -47,6 +47,7 @@ public class FileIO {
      * Writes the contents of the HashMap to file.  Rather than updating individual line(s), the file is overwritten with
      * the entire contents of Word objects in the HashMap.
      */
+    @Override
     public void writeToDataFile(Map<String, Word> dictMap){
         ClassLoader classLoader = getClass().getClassLoader();
 
@@ -93,6 +94,7 @@ public class FileIO {
      *
      * Parses the CSV dictionary file and returns a HashMap instance with String - Word pairs
      */
+    @Override
     public Map<String, Word> loadDataFile(){
         ClassLoader classLoader = getClass().getClassLoader();
         Map<String, Word> dictMap = new HashMap<>();
