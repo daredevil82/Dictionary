@@ -3,7 +3,6 @@ package com.quantrix.dictionary.controller;
 import com.quantrix.dictionary.dao.DictionaryDAO;
 import com.quantrix.dictionary.dao.IDAO;
 import com.quantrix.dictionary.domain.Word;
-import com.quantrix.dictionary.service.SearchService;
 import com.quantrix.dictionary.service.Service;
 import com.quantrix.dictionary.service.WordService;
 import com.quantrix.dictionary.utils.FileIO;
@@ -18,7 +17,6 @@ public class DictionaryController {
 
     private static final DictionaryController INSTANCE = new DictionaryController();
     private Service wordService;
-    private Service searchService;
 
     /**
      *
@@ -32,17 +30,13 @@ public class DictionaryController {
         this.wordService = wordService;
     }
 
-    public void setSearchService(Service searchService){
-        this.searchService = searchService;
-    }
-
     /**
      *
      * @return Map dictionary words
      */
     @SuppressWarnings(value = "unchecked")
     public Map<String, Word> getMap(){
-        return searchService.getMap();
+        return wordService.getMap();
     }
 
     /**
@@ -51,7 +45,7 @@ public class DictionaryController {
      * @return Word
      */
     public Word getWord(String query){
-        return (Word) searchService.get(query);
+        return (Word) wordService.get(query);
     }
 
     /**
@@ -61,7 +55,7 @@ public class DictionaryController {
      */
     @SuppressWarnings("unchecked")
     public Word getWord(Word word){
-        return (Word) searchService.get(word);
+        return (Word) wordService.get(word);
 
     }
 
@@ -72,7 +66,7 @@ public class DictionaryController {
      * @return boolean
      */
     @SuppressWarnings(value = "unchecked")
-    public boolean saveWord(String wordName, String wordDefinition){
+    public boolean save(String wordName, String wordDefinition){
         return wordService.save(wordName, wordDefinition);
     }
 
@@ -95,7 +89,7 @@ public class DictionaryController {
      */
     @SuppressWarnings(value = "unchecked")
     public List<Word> searchDictionary(String query){
-        return null;
+        return wordService.getResults(query);
     }
 
     /**
@@ -122,16 +116,21 @@ public class DictionaryController {
     public static void main(String[] args){
         DictionaryController dictionaryController = DictionaryController.getInstance();
         Service wordService = WordService.getInstance();
-        Service searchService = SearchService.getInstance();
         IDAO idao = DictionaryDAO.getInstance();
         FileIO fileIO = FileIO.getInstance();
 
         idao.setFileIO(fileIO);
         wordService.setIdao(idao);
-        searchService.setIdao(idao);
 
         dictionaryController.setWordService(wordService);
-        dictionaryController.setSearchService(searchService);
+
+        Word firstWord = (Word) wordService.get(1);
+        System.out.println("First word in dictionary:\n" + firstWord.toString());
+
+        dictionaryController.save("daoTest", "A DAO Test Execution");
+
+        Word retrieveNewWord = dictionaryController.getWord("daoTest");
+        System.out.println("Retrive daoTest\n" + retrieveNewWord.toString());
 
         Map<String, Word> dictMap = dictionaryController.getMap();
 
@@ -145,9 +144,22 @@ public class DictionaryController {
         for (Word word : searchResults)
             System.out.println(word.getId() + "\t" + word.getWordName());
 
+        //this should return as null
+        Word failedGet = dictionaryController.getWord("someteststring");
+
+        //delete the new word created above
+        dictionaryController.deleteWord(retrieveNewWord);
+
+        //should return as null
+        Word failedReturn = (Word) wordService.get("daoTest");
 
 
-
+        try {
+            System.out.println(failedGet.toString());
+            System.out.print(failedReturn.toString());
+        } catch (NullPointerException e){
+            System.out.println("Word get retrieved null values");
+        }
 
     }
 }

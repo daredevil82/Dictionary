@@ -1,8 +1,11 @@
 package com.quantrix.dictionary.service;
 
+import com.quantrix.dictionary.dao.DictionaryDAO;
 import com.quantrix.dictionary.dao.IDAO;
 import com.quantrix.dictionary.domain.Word;
+import com.quantrix.dictionary.utils.FileIO;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -14,12 +17,9 @@ import java.util.Map;
 public class WordService implements Service<Word> {
 
     private static final WordService INSTANCE = new WordService();
-    private Service searchService;
     private IDAO idao;
 
-    private WordService(){
-        searchService = SearchService.getInstance();
-    }
+    private WordService(){}
 
     public static WordService getInstance(){
         return INSTANCE;
@@ -70,28 +70,85 @@ public class WordService implements Service<Word> {
     @Override
     @SuppressWarnings("unchecked")
     public Map<String, Word> getMap() {
-        return searchService.getMap();
+        return idao.getAll();
     }
 
     @Override
     public Word get(String query) {
-        return (Word) searchService.get(query);
+        return (Word) idao.get(query);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public Word get(Word query) {
-        return (Word) searchService.get(query);
+        return (Word) idao.get(query);
     }
 
     @Override
     public Word get(int id) {
-        return  (Word) searchService.get(id);
+        return  (Word) idao.get(id);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public List<Word> getResults(String query) {
-        return searchService.getResults(query);
+        List<Word> wordResults = new ArrayList<>();
+        Map<String, Word> dictMap = idao.getAll();
+
+        if (query.equals(""))
+            return wordResults;
+
+        for (Word word : dictMap.values()){
+            if (word.getWordName().toLowerCase().contains(query.toLowerCase()))
+                wordResults.add(word);
+        }
+
+        return wordResults;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void main(String[] args){
+        Service wordService = WordService.getInstance();
+        IDAO idao = DictionaryDAO.getInstance();
+        FileIO fileIO = FileIO.getInstance();
+
+        idao.setFileIO(fileIO);
+        wordService.setIdao(idao);
+
+        Word firstWord = (Word) wordService.get(1);
+        System.out.println("First word in dictionary:\n" + firstWord.toString());
+        //create new entry, retrieve it in a new reference and print it out
+        Word newWord = new Word(idao.getAll().size() + 1, "daoTest", "A DAO Test Execution");
+        idao.create(newWord);
+        Word retrieveNewWord = (Word) idao.get("daoTest");
+        System.out.println("Retrive daoTest\n" + retrieveNewWord.toString());
+
+        Map<String, Word> wordMap = wordService.getMap();
+
+        System.out.println("All values in dictionary:");
+        for (Word word : wordMap.values())
+            System.out.println(word.toString());
+
+        List<Word> searchResults = wordService.getResults("Test");
+        System.out.println("Results from query 'Test':");
+        for (Word word : searchResults)
+                System.out.println(word.getId() + "\t" + word.getWordName());
+
+        //this should return as null
+        Word failedGet = (Word) wordService.get("someteststring");
+
+        //delete the new word created above
+        wordService.delete(retrieveNewWord);
+
+        //should return as null
+        Word failedReturn = (Word) wordService.get("daoTest");
+
+        try {
+            System.out.println(failedGet.toString());
+            System.out.print(failedReturn.toString());
+        } catch (NullPointerException e){
+            System.out.println("Word get retrieved null values");
+        }
+
     }
 }
