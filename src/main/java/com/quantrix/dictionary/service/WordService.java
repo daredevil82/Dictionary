@@ -98,6 +98,14 @@ public class WordService implements Service<Word> {
         return  (Word) idao.get(id);
     }
 
+    /**
+     *
+     * @param query String
+     * @return List of words
+     *
+     * Executes a simple `contains` query for all words in the dictionary.  All results are processed using a levenshtein distance implementation
+     * and list is sorted by the edit distances of the results
+     */
     @Override
     @SuppressWarnings("unchecked")
     public List<Word> getResults(String query) {
@@ -112,7 +120,7 @@ public class WordService implements Service<Word> {
                 wordResults.add(word);
         }
 
-        return wordResults;
+        return sortByEditDistance(wordResults, query);
     }
 
 
