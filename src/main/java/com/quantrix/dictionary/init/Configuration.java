@@ -7,6 +7,7 @@ import com.quantrix.dictionary.domain.Word;
 import com.quantrix.dictionary.service.Service;
 import com.quantrix.dictionary.service.WordService;
 import com.quantrix.dictionary.utils.FileIO;
+import com.quantrix.dictionary.utils.HttpUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -44,11 +45,18 @@ public class Configuration {
         return service;
     }
 
+    public HttpUtils initHttpUtils(){
+        return new HttpUtils(URL_QUERY, CONTENT_TYPE);
+    }
+
     public DictionaryController initController(){
         DictionaryController dictionaryController = DictionaryController.getInstance();
 
         IDAO idao = initDAO();
         Service service = initService(idao);
+
+        HttpUtils httpUtils = initHttpUtils();
+        service.setHttpUtils(httpUtils);
 
         dictionaryController.setWordService(service);
 

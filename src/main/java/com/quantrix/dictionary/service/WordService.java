@@ -4,7 +4,9 @@ import com.quantrix.dictionary.dao.DictionaryDAO;
 import com.quantrix.dictionary.dao.IDAO;
 import com.quantrix.dictionary.domain.Word;
 import com.quantrix.dictionary.utils.FileIO;
+import com.quantrix.dictionary.utils.HttpUtils;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,7 @@ public class WordService implements Service<Word> {
 
     private static final WordService INSTANCE = new WordService();
     private IDAO idao;
+    private HttpUtils httpUtils;
 
     private WordService(){}
 
@@ -29,6 +32,10 @@ public class WordService implements Service<Word> {
         this.idao = idao;
     }
 
+    public void setHttpUtils(HttpUtils httpUtils){
+        this.httpUtils = httpUtils;
+    }
+
     /**
      *
      * @param wordName String
@@ -38,7 +45,8 @@ public class WordService implements Service<Word> {
     @Override
     @SuppressWarnings(value = "unchecked")
     public boolean save(String wordName, String wordDefinition){
-        Word tempWord = new Word(idao.getAll().size() + 1, wordName, wordDefinition);
+        int wordId = findAvailableId();
+        Word tempWord = new Word(wordId, wordName, wordDefinition);
 
         idao.create(tempWord);
         Word checkCreate = (Word) idao.get(wordName);
@@ -75,12 +83,6 @@ public class WordService implements Service<Word> {
 
     @Override
     public Word get(String query) {
-        /*
-        Word queryResult = (Word) idao.get(query);
-        if (queryResult == null)
-            queryResult = getOnlineDefinition(query);
-        */
-
         return (Word) idao.get(query);
     }
 
@@ -112,16 +114,33 @@ public class WordService implements Service<Word> {
         return wordResults;
     }
 
-    public Word getOnlineDefinition(Word word){
-        return getOnlineDefinition(word.getWordName());
-    }
 
-    public Word getOnlineDefinition(String query){
-        return null;
+    /**
+     *
+     * @param query String word search
+     * @return String defintions
+     *
+     * Executes a query to an online definition service.
+     * Returns a String or null;
+     */
+    public String getOnlineDefinition(String query){
+        HttpURLConnection connection = httpUtils.sendGet(query);
+        return httpUtils.processDictionaryResults(connection);
     }
 
     public int levenshteinDistance(String s0, String s1) {
         return 0;
+    }
+
+    private int findAvailableId(){
+        int wordId = 0;
+        Map<String, Word> dictMap = idao.getAll();
+        for (Word word : dictMap.values()){
+            if (word.getId() > wordId)
+                wordId = word.getId();
+        }
+
+        return wordId + 1;
     }
 
     @SuppressWarnings("unchecked")

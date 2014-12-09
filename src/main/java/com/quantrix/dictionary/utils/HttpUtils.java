@@ -7,10 +7,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.swing.text.html.parser.Parser;
 import javax.xml.parsers.*;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.UnknownHostException;
 
 /**
  * Created by jasonjohns on 12/5/14.
@@ -78,6 +80,41 @@ public class HttpUtils {
         }
 
         return null;
+    }
+
+    public String processDictionaryResults(HttpURLConnection connection){
+        StringBuilder definitions = new StringBuilder();
+
+        try {
+            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document document = documentBuilder.parse(connection.getInputStream());
+            document.getDocumentElement().normalize();
+
+            NodeList nodeList = document.getElementsByTagName("Definitions");
+            NodeList definitionList;
+            Node node;
+            Element element;
+
+            for (int i= 0; i < nodeList.getLength(); i++){
+                node = nodeList.item(i);
+
+                if (node.getNodeType() == Node.ELEMENT_NODE){
+                    element = (Element) node;
+
+                    definitionList = element.getElementsByTagName("Definition");
+
+                    for (int j = 0; j < definitionList.getLength(); j++){
+                        definitions.append(definitionList.item(j).getTextContent() + "\n\n");
+                    }
+                }
+            }
+
+            return definitions.toString();
+
+        } catch (IOException | SAXException | ParserConfigurationException e){
+            e.printStackTrace();
+            return null;
+        }
     }
 
     //private test method

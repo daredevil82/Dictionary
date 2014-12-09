@@ -42,6 +42,7 @@ public class DictionaryController {
     }
 
 
+
     /**
      *
      * @return sorted list of words
@@ -54,13 +55,6 @@ public class DictionaryController {
         Collections.sort(sortedWords, Word.wordComparator);
 
         return sortedWords;
-    }
-
-    public List<Word> searchWords(String query){
-        List<Word> wordList = wordService.getResults(query);
-        Collections.sort(wordList, Word.wordComparator);
-
-        return wordList;
     }
 
     /**
@@ -91,6 +85,10 @@ public class DictionaryController {
     @SuppressWarnings("unchecked")
     public Word getWord(int id){
         return (Word) wordService.get(id);
+    }
+
+    public String getDefinitions(String query){
+        return wordService.getOnlineDefinition(query);
     }
 
     /**
