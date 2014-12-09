@@ -51,8 +51,8 @@ public class WordService implements Service<Word> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public boolean update(Word entity) {
-        return (boolean)idao.update(entity);
+    public void update(Word entity) {
+        idao.update(entity);
     }
 
     @Override

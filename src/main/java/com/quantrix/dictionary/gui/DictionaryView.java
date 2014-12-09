@@ -12,7 +12,10 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Vector;
 
 
 /**
@@ -57,6 +60,7 @@ public class DictionaryView {
         this.dictionaryController = dictionaryController;
         initSearchResultsTableModel();
         initListeners();
+        selectedRow = -1;
 
         JFrame jFrame = new JFrame("Dictionary - Fun Times");
         jFrame.setContentPane(dictionaryMainPanel);
@@ -85,8 +89,13 @@ public class DictionaryView {
                 if (!dictionarySearch.getText().equals("")) {
                     String query = dictionarySearch.getText();
                     List<Word> searchResults = dictionaryController.searchDictionary(query);
+                    Collections.sort(searchResults, Word.wordComparator);
 
                     populateTableModel(searchResults);
+
+                    if (!searchResults.get(0).getWordName().equals(query)){
+
+                    }
                 }
             }
         });
@@ -97,33 +106,71 @@ public class DictionaryView {
         resetResultsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                selectedRow = -1;
+                cancelEditButton.doClick();
                 List<Word> wordList = dictionaryController.getSortedList();
                 populateTableModel(wordList);
+
             }
         });
 
+        /**
+         * Save operation that discriminates between a `Create` and `Update`.
+         * If no previous selection has been made, or a Cancel button click has occurred,
+         * a Save event is executed, which creates a new Word object, adds the values to the sorted JTable
+         *
+         * If a previous selection has been made, a check executes on whether the word input matches anything in the
+         * database.  If it does, then the definition value is set and a DAO update operation executes.  On success,
+         * the table definition and date updated fields are updated with the new values.
+         *
+         * Otherwise, a create operation takes place.
+         */
         saveEditButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
                 System.out.println("Save Executing");
+                String wordName = wordNameTextInput.getText();
+                String wordDefinition = wordDefinitionTextArea.getText();
 
-                if (selectedRow >= 0) {
-                    String wordName = wordNameTextInput.getText();
-                    String wordDefinition = wordDefinitionTextArea.getText();
+                Word thisWord = dictionaryController.getWord(wordName);
 
-                    dictionaryController.save(wordName, wordDefinition);
+                //if this is an update operation
+                if (selectedRow >= 0 && thisWord != null) {
 
-                    int wordId = Integer.parseInt((String) wordTable.getValueAt(selectedRow, 0));
-
-                    Word thisWord = dictionaryController.getWord(wordId);
+                    thisWord.setWordDefinition(wordDefinition);
+                    dictionaryController.updateWord(thisWord);
 
                     wordDateUpdatedTextInput.setText(thisWord.getDateTimeFormatter().print(thisWord.getDateLastUpdated()));
                     wordTableModel.setValueAt(thisWord.getWordName(), selectedRow, 1);
                     wordTableModel.setValueAt(thisWord.getWordDefinition(), selectedRow, 2);
                     wordTableModel.setValueAt(thisWord.getDateTimeFormatter().print(thisWord.getDateLastUpdated()), selectedRow, 4);
 
+                } else if (wordName.length() > 0) {
+                    dictionaryController.save(wordName, wordDefinition);
+                    thisWord = dictionaryController.getWord(wordName);
+
+                    Object[] rowObject = new Object[]{
+                            String.valueOf(thisWord.getId()),
+                            thisWord.getWordName(),
+                            thisWord.getWordDefinition(),
+                            thisWord.getDateTimeFormatter().print(thisWord.getDateCreated()),
+                            thisWord.getDateTimeFormatter().print(thisWord.getDateLastUpdated()),
+                            thisWord};
+                    wordTableModel.addRow(rowObject);
+
+                    Vector data = wordTableModel.getDataVector();
+                    Collections.sort(data, new TableColumnSorter(1));
+                    String rowWord;
+
+                    for (int i = 0; i < wordTableModel.getRowCount(); i++) {
+                        rowWord = (String) wordTableModel.getValueAt(i, 1);
+                        if (rowWord.equals(wordName)) {
+                            wordTable.setRowSelectionInterval(i, i);
+                        }
+                    }
                 }
+
             }
         });
 
@@ -247,11 +294,6 @@ public class DictionaryView {
 
     }
 
-    private void createUIComponents() {
-        // TODO: place custom component creation code here
-    }
-
-
     {
 // GUI initializer generated by IntelliJ IDEA GUI Designer
 // >>> IMPORTANT!! <<<
@@ -288,7 +330,7 @@ public class DictionaryView {
         dictionarySearchPanel.add(panel1, new com.intellij.uiDesigner.core.GridConstraints(2, 0, 1, 2, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(8, 4, new Insets(0, 0, 0, 0), -1, -1));
-        panel1.add(panel2, new com.intellij.uiDesigner.core.GridConstraints(2, 2, 1, 2, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel1.add(panel2, new com.intellij.uiDesigner.core.GridConstraints(2, 2, 1, 2, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(150, -1), null, 0, false));
         wordDateCreatedTextLabel = new JLabel();
         wordDateCreatedTextLabel.setText("Date Created");
         panel2.add(wordDateCreatedTextLabel, new com.intellij.uiDesigner.core.GridConstraints(0, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -347,7 +389,7 @@ public class DictionaryView {
         wordFoundFromOnlineQueryLabel.setVisible(false);
         panel1.add(wordFoundFromOnlineQueryLabel, new com.intellij.uiDesigner.core.GridConstraints(0, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_WEST, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         wordTablePane = new JScrollPane();
-        panel1.add(wordTablePane, new com.intellij.uiDesigner.core.GridConstraints(1, 1, 2, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        panel1.add(wordTablePane, new com.intellij.uiDesigner.core.GridConstraints(1, 1, 2, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(200, -1), null, 0, false));
         wordTable = new JTable();
         wordTable.setAutoCreateColumnsFromModel(true);
         wordTablePane.setViewportView(wordTable);
@@ -365,4 +407,28 @@ public class DictionaryView {
     public JComponent $$$getRootComponent$$$() {
         return dictionaryMainPanel;
     }
+
+    private class TableColumnSorter implements Comparator {
+        private int colIndex;
+
+        TableColumnSorter(int colIndex) {
+            this.colIndex = colIndex;
+        }
+
+        public int compare(Object a, Object b) {
+            Vector vec1 = (Vector) a;
+            Vector vec2 = (Vector) b;
+
+            String wordOne = (String) vec1.get(colIndex);
+            String wordTwo = (String) vec2.get(colIndex);
+
+            return wordOne.compareTo(wordTwo);
+        }
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+    }
+
+
 }

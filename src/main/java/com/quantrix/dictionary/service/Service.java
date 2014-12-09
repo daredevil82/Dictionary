@@ -11,7 +11,7 @@ import java.util.Map;
 public interface Service<T> {
 
     public boolean save(String string1, String string2);
-    public boolean update(T entity);
+    public void update(T entity);
     public void delete(String entity);
     public void delete(T entity);
     public void setIdao(IDAO idao);

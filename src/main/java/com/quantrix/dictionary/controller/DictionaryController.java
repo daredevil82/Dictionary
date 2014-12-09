@@ -112,8 +112,8 @@ public class DictionaryController {
      * Updates a Word entity
      */
     @SuppressWarnings("unchecked")
-    public boolean updateWord(Word word){
-        return wordService.update(word);
+    public void updateWord(Word word){
+        wordService.update(word);
     }
 
     /**
