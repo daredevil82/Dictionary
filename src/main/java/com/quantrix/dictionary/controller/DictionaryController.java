@@ -7,6 +7,8 @@ import com.quantrix.dictionary.service.Service;
 import com.quantrix.dictionary.service.WordService;
 import com.quantrix.dictionary.utils.FileIO;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +41,28 @@ public class DictionaryController {
         return wordService.getMap();
     }
 
+
+    /**
+     *
+     * @return sorted list of words
+     */
+    @SuppressWarnings("unchecked")
+    public List<Word> getSortedList(){
+        Map<String, Word> wordMap = wordService.getMap();
+
+        List<Word> sortedWords = new ArrayList<>(wordMap.values());
+        Collections.sort(sortedWords, Word.wordComparator);
+
+        return sortedWords;
+    }
+
+    public List<Word> searchWords(String query){
+        List<Word> wordList = wordService.getResults(query);
+        Collections.sort(wordList, Word.wordComparator);
+
+        return wordList;
+    }
+
     /**
      *
      * @param query String
@@ -57,6 +81,16 @@ public class DictionaryController {
     public Word getWord(Word word){
         return (Word) wordService.get(word);
 
+    }
+
+    /**
+     *
+     * @param id int Word Id
+     * @return Word
+     */
+    @SuppressWarnings("unchecked")
+    public Word getWord(int id){
+        return (Word) wordService.get(id);
     }
 
     /**

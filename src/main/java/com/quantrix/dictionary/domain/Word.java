@@ -12,8 +12,9 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.io.Serializable;
+import java.util.Comparator;
 
-public class Word implements Serializable{
+public class Word implements Serializable, Comparable<Word> {
 
     private int wordId;
 
@@ -24,6 +25,13 @@ public class Word implements Serializable{
     private DateTime dateLastUpdated;
 
     private static DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("dd/MM/yyyy:HH:mm:ss");
+
+    public static Comparator<Word> wordComparator = new Comparator<Word>() {
+        @Override
+        public int compare(Word firstWord, Word secondWord) {
+            return firstWord.compareTo(secondWord);
+        }
+    };
 
     public Word(){}
 
@@ -98,8 +106,17 @@ public class Word implements Serializable{
         this.dateLastUpdated = dateLastUpdated;
     }
 
+    public DateTimeFormatter getDateTimeFormatter(){
+        return dateTimeFormatter;
+    }
+
     @Override
     public String toString(){
         return "Word:\t\t" + wordName + "\nDefinition:\t" + wordDefinition + "\nCreated:\t" + dateTimeFormatter.print(dateCreated) + "\n";
+    }
+
+    @Override
+    public int compareTo(Word o) {
+        return this.wordName.compareTo(o.getWordName());
     }
 }

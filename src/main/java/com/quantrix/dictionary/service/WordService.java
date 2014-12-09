@@ -75,6 +75,12 @@ public class WordService implements Service<Word> {
 
     @Override
     public Word get(String query) {
+        /*
+        Word queryResult = (Word) idao.get(query);
+        if (queryResult == null)
+            queryResult = getOnlineDefinition(query);
+        */
+
         return (Word) idao.get(query);
     }
 
@@ -104,6 +110,18 @@ public class WordService implements Service<Word> {
         }
 
         return wordResults;
+    }
+
+    public Word getOnlineDefinition(Word word){
+        return getOnlineDefinition(word.getWordName());
+    }
+
+    public Word getOnlineDefinition(String query){
+        return null;
+    }
+
+    public int levenshteinDistance(String s0, String s1) {
+        return 0;
     }
 
     @SuppressWarnings("unchecked")

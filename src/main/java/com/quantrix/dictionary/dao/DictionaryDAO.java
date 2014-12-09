@@ -126,7 +126,7 @@ public class DictionaryDAO extends AbstractDAO<Word> implements IDAO<Word> {
      */
     @Override
     public void delete(Word entity) {
-        delete(entity.getWordName().toLowerCase());
+        delete(entity.getWordName());
     }
 
     /**

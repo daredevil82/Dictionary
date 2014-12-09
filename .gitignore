@@ -15,5 +15,8 @@ hs_err_pid*
 
 quantrix-dict.iml
 .idea
+target/maven-*
+target/generated-sources
+target/test-classes
 
 
