@@ -19,6 +19,8 @@ public class Configuration {
 
     private static final String CONTENT_TYPE = "text/xml;charset=utf8";
     private static final String URL_QUERY = "http://services.aonaware.com/DictService/DictService.asmx/Define?word=";
+    //private static final String DICTIONARY_LOCATION = "com/quantrix/dictionary/data/dictData.dat";
+    private static final String DICTIONARY_LOCATION = "dictData.dat";
 
     public Configuration(){}
 
@@ -30,8 +32,13 @@ public class Configuration {
         return URL_QUERY;
     }
 
+    public String getDictionaryLocation(){
+        return DICTIONARY_LOCATION;
+    }
+
     private IDAO initDAO(){
         FileIO fileIO = FileIO.getInstance();
+        fileIO.setDictionaryFile(DICTIONARY_LOCATION);
         IDAO idao = DictionaryDAO.getInstance();
 
         idao.setFileIO(fileIO);

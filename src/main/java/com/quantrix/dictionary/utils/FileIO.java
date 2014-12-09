@@ -8,6 +8,11 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,10 +28,12 @@ import java.util.Map;
  */
 public class FileIO implements IO{
 
-    private static final String DICTIONARYFILE = "dictData.dat";
+    private String dictionaryFile;
     private static final FileIO INSTANCE = new FileIO();
 
     private File dataFile;
+    private URL dataUrl;
+    private URLConnection dataOutputConnection;
     private Writer dataWriter;
     private Reader dataReader;
 
@@ -40,6 +47,10 @@ public class FileIO implements IO{
         return INSTANCE;
     }
 
+    public void setDictionaryFile(String dictionaryFile){
+        this.dictionaryFile = dictionaryFile;
+    }
+
     /**
      *
      * @param dictMap HashMap
@@ -49,11 +60,10 @@ public class FileIO implements IO{
      */
     @Override
     public void writeToDataFile(Map<String, Word> dictMap){
-        ClassLoader classLoader = getClass().getClassLoader();
 
         try {
-            dataFile = new File(classLoader.getResource(DICTIONARYFILE).getFile());
-            dataWriter = new FileWriter(dataFile);
+            Path path = Paths.get(dataUrl.toURI());
+            dataWriter = new FileWriter(path.toFile());
 
             csvFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");
             csvPrinter = new CSVPrinter(dataWriter, csvFormat);
@@ -74,7 +84,7 @@ public class FileIO implements IO{
                 csvPrinter.printRecord(wordData);
             }
 
-        } catch (NullPointerException | IOException e){
+        } catch (NullPointerException | IOException | URISyntaxException e){
             e.printStackTrace();
         } finally {
             try {
@@ -96,13 +106,13 @@ public class FileIO implements IO{
      */
     @Override
     public Map<String, Word> loadDataFile(){
-        ClassLoader classLoader = getClass().getClassLoader();
+        ClassLoader classLoader = this.getClass().getClassLoader();
         Map<String, Word> dictMap = new HashMap<>();
 
         try {
             //Open file connection and read stream
-            dataFile = new File(classLoader.getResource(DICTIONARYFILE).getFile());
-            dataReader = new FileReader(dataFile);
+            dataUrl = classLoader.getResource(dictionaryFile);
+            dataReader = new InputStreamReader(dataUrl.openStream());
 
             //Initialize Apache Commons CSV instances and parse the dictionary file
             csvFormat = CSVFormat.DEFAULT.withHeader(CSVHeaderMapping.FILE_HEADER);
