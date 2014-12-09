@@ -8,6 +8,7 @@ import com.quantrix.dictionary.utils.HttpUtils;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -128,10 +129,96 @@ public class WordService implements Service<Word> {
         return httpUtils.processDictionaryResults(connection);
     }
 
-    public int levenshteinDistance(String s0, String s1) {
-        return 0;
+    /**
+     *
+     * @param query String
+     * @return list of words sorted by edit distance to `query`
+     *
+     * Executes a getResults(query) operation, and sorts the results.
+     */
+    public List<Word> sortByEditDistance(String query){
+        List<Word> wordList = getResults(query);
+        return sortByEditDistance(wordList, query);
     }
 
+    /**
+     *
+     * @param wordList List of words, from any source
+     * @param query String
+     * @return List of words sorted by edit distance to `query`
+     *
+     * Sorts the provided wordList into order of edit distance
+     */
+    public List<Word> sortByEditDistance(List<Word> wordList, String query){
+        int editDistance;
+
+        for (Word word : wordList){
+            editDistance = levenshteinDistance(query, word.getWordName());
+            word.setEditDistance(editDistance);
+        }
+
+        Collections.sort(wordList, Word.editComparator);
+
+        return wordList;
+    }
+
+    /**
+     *
+     * @param s0 String word
+     * @param s1 String word
+     * @return int edit distance
+     *
+     * Levenshtein adaptation from http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Java
+     */
+    private int levenshteinDistance(String s0, String s1) {
+        int length0 = s0.length() + 1,
+            length1 = s1.length();
+
+        //array of distances
+        int[] cost = new int[length0];
+        int[] newCost = new int[length0];
+
+        //initial cost of skipping prefix in string s0
+        for (int i = 0; i < length0; i++)
+            cost[i] = i;
+
+        //dynamically compute array of distances
+        //transformation cost for each letter in s1
+        for (int j = 1; j < length1; j++){
+            newCost[0] = j;
+
+            //transformation cost for each letter in s0
+            for (int i = 1; i < length0; i++){
+
+                //matching current letters in both strings
+                int match = (s0.charAt(i - 1) == s1.charAt(j - 1)) ? 0 : 1;
+
+                //compute cost for each transformation
+                int costReplace = cost[i - 1] + match;
+                int costInsert = cost[i] + 1;
+                int costDelete = newCost[i - 1] + 1;
+
+                //keep min cost
+                newCost[i] = Math.min(Math.min(costInsert, costDelete), costReplace);
+            }
+
+            //swap cost/newCost arrays
+            int[] swap = cost;
+            cost = newCost;
+            newCost = swap;
+        }
+
+        //the distance is the cost for transforming all letters in both strings
+        return cost[length0 - 1];
+
+    }
+
+    /**
+     *
+     * @return int first avaliable ID from highest number found
+     *
+     * Convenience method to easily set wordId value on object creation
+     */
     private int findAvailableId(){
         int wordId = 0;
         Map<String, Word> dictMap = idao.getAll();

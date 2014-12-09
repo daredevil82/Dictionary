@@ -18,18 +18,32 @@ public class Word implements Serializable, Comparable<Word> {
 
     private int wordId;
 
-    //immutable - all update oeprations should not modify this field.
     private String wordName;
     private String wordDefinition;
     private DateTime dateCreated;
     private DateTime dateLastUpdated;
 
+    private int editDistance;
+
     private static DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("dd/MM/yyyy:HH:mm:ss");
 
+    /**
+     * Custom comparer for sorting based on wordName values
+     */
     public static Comparator<Word> wordComparator = new Comparator<Word>() {
         @Override
         public int compare(Word firstWord, Word secondWord) {
             return firstWord.compareTo(secondWord);
+        }
+    };
+
+    /**
+     * Custom comparer for sorting based on edit distance values
+     */
+    public static Comparator<Word> editComparator = new Comparator<Word>() {
+        @Override
+        public int compare(Word o1, Word o2) {
+            return o1.getEditDistance() - o2.getEditDistance();
         }
     };
 
@@ -108,6 +122,14 @@ public class Word implements Serializable, Comparable<Word> {
 
     public DateTimeFormatter getDateTimeFormatter(){
         return dateTimeFormatter;
+    }
+
+    public int getEditDistance() {
+        return editDistance;
+    }
+
+    public void setEditDistance(int editDistance) {
+        this.editDistance = editDistance;
     }
 
     @Override
