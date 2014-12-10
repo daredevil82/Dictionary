@@ -6,6 +6,7 @@ import com.quantrix.dictionary.dao.IDAO;
 import com.quantrix.dictionary.domain.Word;
 import com.quantrix.dictionary.service.Service;
 import com.quantrix.dictionary.service.WordService;
+import com.quantrix.dictionary.utils.DatabaseIO;
 import com.quantrix.dictionary.utils.FileIO;
 import com.quantrix.dictionary.utils.HttpUtils;
 import com.quantrix.dictionary.utils.WordIO;
@@ -48,8 +49,9 @@ public class Configuration {
 
     private IDAO initDatabaseDAO(){
         Connection connection = initDataSource();
-        WordIO wordIO = WordIO.getInstance();
-        wordIO.setConnection(connection);
+        DatabaseIO wordIO = WordIO.getInstance();
+        wordIO.setDatabaseName(DATABASE_NAME);
+        wordIO.setDatabaseConnection(DATABASE_CONNECTION);
 
         IDAO idao = DictionaryDAO.getInstance();
         idao.setWordIO(wordIO);
@@ -82,7 +84,6 @@ public class Configuration {
         return dictionaryController;
 
     }
-
     private Connection initDataSource(){
         Connection connection = null;
 
@@ -96,7 +97,6 @@ public class Configuration {
 
         return connection;
     }
-
 
     public static void main(String[] args){
         Configuration configuration = new Configuration();

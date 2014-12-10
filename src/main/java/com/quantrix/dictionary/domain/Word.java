@@ -25,7 +25,8 @@ public class Word implements Serializable, Comparable<Word> {
 
     private int editDistance;
 
-    private static DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("dd/MM/yyyy:HH:mm:ss");
+    private static DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss");
+
 
     /**
      * Custom comparer for sorting based on wordName values
@@ -101,7 +102,7 @@ public class Word implements Serializable, Comparable<Word> {
     }
 
     public void setDateCreated(String dateCreated){
-        this.dateCreated = new DateTime(dateCreated);
+        this.dateCreated = dateTimeFormatter.parseDateTime(dateCreated);
     }
 
     public void setDateCreated(DateTime dateCreated) {
@@ -113,7 +114,7 @@ public class Word implements Serializable, Comparable<Word> {
     }
 
     public void setDateLastUpdated(String dateLastUpdated){
-        this.dateLastUpdated = new DateTime(dateLastUpdated);
+        this.dateLastUpdated = dateTimeFormatter.parseDateTime(dateLastUpdated);
     }
 
     public void setDateLastUpdated(DateTime dateLastUpdated) {

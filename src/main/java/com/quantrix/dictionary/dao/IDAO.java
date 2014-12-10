@@ -6,6 +6,7 @@ package com.quantrix.dictionary.dao;
  * Basic DAO interface
  */
 
+import com.quantrix.dictionary.utils.DatabaseIO;
 import com.quantrix.dictionary.utils.IO;
 import com.quantrix.dictionary.utils.WordIO;
 
@@ -14,7 +15,7 @@ import java.util.Map;
 public interface IDAO<T> {
 
     void setFileIO(IO fileIO);
-    void setWordIO(WordIO wordIO);
+    void setWordIO(DatabaseIO wordIO);
 
     T get(String query);
     T get(T query);

@@ -9,11 +9,12 @@ import java.util.Map;
 /**
  * Created by jasonjohns on 12/9/14.
  */
-public class WordIO {
+public class WordIO implements DatabaseIO<Word> {
 
     private static final WordIO INSTANCE = new WordIO();
-    private Connection connection;
+
     private PreparedStatement preparedStatement;
+    private String databaseName, databaseConnection;
 
 
     private WordIO(){}
@@ -22,22 +23,46 @@ public class WordIO {
         return INSTANCE;
     }
 
-    public void setConnection(Connection connection) {
-        this.connection = connection;
+    @Override
+    public void setDatabaseName(String databaseName){
+        this.databaseName = databaseName;
     }
 
-    public boolean insertData(Word word){
+    @Override
+    public void setDatabaseConnection(String databaseConnection){
+        this.databaseConnection = databaseConnection;
+    }
+
+    private Connection getConnection(){
+        Connection connection = null;
+
         try {
-            preparedStatement = connection.prepareStatement("INSERT INTO 'word' VALUES(?, ?, ?, ?), ?;");
+            Class.forName(databaseName);
+            connection = DriverManager.getConnection(databaseConnection);
+            connection.setAutoCommit(false);
+        } catch (ClassNotFoundException | SQLException e ){
+            e.printStackTrace();
+        }
+
+        return connection;
+    }
+
+    @Override
+    public boolean insert(Word word){
+
+        Connection connection = getConnection();
+        int queryResult;
+        try {
+            preparedStatement = connection.prepareStatement("INSERT INTO 'word'('id', 'word_name', 'word_definition','date_created', 'date_updated') VALUES(?, ?, ?, ?, ?);");
             preparedStatement.setInt(1, word.getId());
             preparedStatement.setString(2, word.getWordName());
             preparedStatement.setString(3, word.getWordDefinition());
-            preparedStatement.setDate(4, Date.valueOf(word.getDateCreated().toString()));
-            preparedStatement.setDate(5, Date.valueOf(word.getDateLastUpdated().toString()));
+            preparedStatement.setString(4, word.getDateTimeFormatter().print(word.getDateCreated()));
+            preparedStatement.setString(5, word.getDateTimeFormatter().print(word.getDateLastUpdated()));
 
-
-            preparedStatement.execute();
-            connection.commit();
+            connection.setAutoCommit(false);
+            queryResult = preparedStatement.executeUpdate();
+            connection.setAutoCommit(true);
 
 
         } catch (SQLException e) {
@@ -51,23 +76,26 @@ public class WordIO {
                 e.printStackTrace();
             }
         }
-        return true;
+        return queryResult == 1;
     }
 
-    public Map<String, Word> getAllWords(){
+    @Override
+    public Map<String, Word> getAll(){
+        Connection connection = getConnection();
+        Map<String, Word> dictMap;
         try {
             preparedStatement = connection.prepareStatement("SELECT * FROM 'word';");
             ResultSet resultSet = preparedStatement.executeQuery();
-            Map<String, Word> dictMap = new HashMap<>();
+            dictMap = new HashMap<>();
             while (resultSet.next()){
                 Word word = new Word(resultSet.getInt("id"), resultSet.getString("word_name"), resultSet.getString("word_definition"));
                 word.setDateCreated(resultSet.getString("date_created"));
                 word.setDateLastUpdated(resultSet.getString("date_updated"));
 
-                dictMap.put(word.getWordName(), word);
+                dictMap.put(word.getWordName().toLowerCase(), word);
             }
 
-            return dictMap;
+            resultSet.close();
         } catch (SQLException e){
             e.printStackTrace();
             return null;
@@ -79,9 +107,13 @@ public class WordIO {
                 e.printStackTrace();
             }
         }
+
+        return dictMap;
     }
 
-    public boolean deleteWord(Word word){
+    @Override
+    public boolean delete(Word word){
+        Connection connection = getConnection();
         try {
             preparedStatement = connection.prepareStatement("DELETE FROM 'word' WHERE 'id' = ?;");
             preparedStatement.setInt(1, word.getId());
@@ -103,17 +135,19 @@ public class WordIO {
         }
     }
 
-    public boolean updateWord(Word word){
+    @Override
+    public boolean update(Word word){
+        Connection connection = getConnection();
+        int queryResult;
         try {
-            preparedStatement = connection.prepareStatement("UPDATE 'word' SET 'word_name' = ?, 'word_definition' = ?, 'date_updated' = ? WHERE 'id' = ?;");
+            preparedStatement = connection.prepareStatement("UPDATE 'word' SET 'word_name' = ?, 'word_definition' = ?, 'date_updated' = ? WHERE 'id' = ?");
             preparedStatement.setString(1, word.getWordName());
             preparedStatement.setString(2, word.getWordDefinition());
-            preparedStatement.setDate(3, Date.valueOf(word.getDateCreated().toString()));
+            preparedStatement.setString(3, word.getDateTimeFormatter().print(word.getDateLastUpdated()));
             preparedStatement.setInt(4, word.getId());
 
-            preparedStatement.execute();
-            connection.commit();
-            return true;
+            queryResult = preparedStatement.executeUpdate();
+            connection.setAutoCommit(true);
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -126,5 +160,7 @@ public class WordIO {
                 e.printStackTrace();
             }
         }
+
+        return queryResult == 1;
     }
 }
