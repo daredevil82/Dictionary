@@ -1,0 +1,7 @@
+com.quantrix.dictionary.controller
+com.quantrix.dictionary.dao
+com.quantrix.dictionary.domain
+com.quantrix.dictionary.gui
+com.quantrix.dictionary.init
+com.quantrix.dictionary.service
+com.quantrix.dictionary.utils
