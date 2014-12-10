@@ -8,6 +8,8 @@ import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -95,12 +97,16 @@ public class FileIO implements IO{
      */
     @Override
     public Map<String, Word> loadDataFile(){
-        ClassLoader classLoader = getClass().getClassLoader();
         Map<String, Word> dictMap = new HashMap<>();
 
         try {
             //Open file connection and read stream
-            dataFile = new File(DICTIONARYFILE);
+            Path dataPath = Paths.get(DICTIONARYFILE);
+            dataFile = dataPath.toFile();
+            if (!dataFile.exists() && !dataFile.canRead()){
+                dataFile.createNewFile();
+            }
+
             dataReader = new FileReader(dataFile);
 
             //Initialize Apache Commons CSV instances and parse the dictionary file
@@ -114,17 +120,19 @@ public class FileIO implements IO{
                    createDate,
                    updateDate;
 
-            //Populate HashMap instance with String - Word pairs
-            //skip first line which contains the header
-            for (int i = 1; i < csvRecordList.size(); i++){
-                CSVRecord record = csvRecordList.get(i);
-                wordId = Integer.parseInt(record.get(CSVHeaderMapping.WORD_ID));
-                wordName = record.get(CSVHeaderMapping.WORD_NAME);
-                wordDefinition = record.get(CSVHeaderMapping.WORD_DEFINITION);
-                createDate = record.get(CSVHeaderMapping.WORD_CREATE_DATE);
-                updateDate = record.get(CSVHeaderMapping.WORD_UPDATE_DATE);
+            if (csvRecordList.size() > 0) {
+                //Populate HashMap instance with String - Word pairs
+                //skip first line which contains the header
+                for (int i = 1; i < csvRecordList.size(); i++) {
+                    CSVRecord record = csvRecordList.get(i);
+                    wordId = Integer.parseInt(record.get(CSVHeaderMapping.WORD_ID));
+                    wordName = record.get(CSVHeaderMapping.WORD_NAME);
+                    wordDefinition = record.get(CSVHeaderMapping.WORD_DEFINITION);
+                    createDate = record.get(CSVHeaderMapping.WORD_CREATE_DATE);
+                    updateDate = record.get(CSVHeaderMapping.WORD_UPDATE_DATE);
 
-                dictMap.put(wordName, new Word(wordId, wordName, wordDefinition, createDate, updateDate));
+                    dictMap.put(wordName, new Word(wordId, wordName, wordDefinition, createDate, updateDate));
+                }
             }
 
         } catch (NullPointerException | IOException | NumberFormatException e){

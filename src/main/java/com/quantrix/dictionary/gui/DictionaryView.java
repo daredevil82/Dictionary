@@ -95,19 +95,18 @@ public class DictionaryView {
 
                     populateTableModel(searchResults);
 
-                    if (!searchResults.get(0).getWordName().equals(query)) {
-                        String definitions = dictionaryController.getDefinitions(query);
+                    String definitions = dictionaryController.getDefinitions(query);
 
-                        if (definitions != null && definitions.length() > 0) {
-                            wordNameTextInput.setText(query);
-                            wordDefinitionTextArea.setText(definitions);
-                            wordFoundFromOnlineQueryLabel.setText("Definition found online");
-                            wordFoundFromOnlineQueryLabel.setVisible(true);
-                        } else {
-                            wordFoundFromOnlineQueryLabel.setText("Error with internet query");
-                            wordFoundFromOnlineQueryLabel.setVisible(true);
-                        }
+                    if (definitions != null && definitions.length() > 0) {
+                        wordNameTextInput.setText(query);
+                        wordDefinitionTextArea.setText(definitions);
+                        wordFoundFromOnlineQueryLabel.setText("Definition found online");
+                        wordFoundFromOnlineQueryLabel.setVisible(true);
+                    } else {
+                        wordFoundFromOnlineQueryLabel.setText("Error with internet query");
+                        wordFoundFromOnlineQueryLabel.setVisible(true);
                     }
+
                 }
             }
         });
