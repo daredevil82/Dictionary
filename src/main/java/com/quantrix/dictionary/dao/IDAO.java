@@ -7,12 +7,14 @@ package com.quantrix.dictionary.dao;
  */
 
 import com.quantrix.dictionary.utils.IO;
+import com.quantrix.dictionary.utils.WordIO;
 
 import java.util.Map;
 
 public interface IDAO<T> {
 
     void setFileIO(IO fileIO);
+    void setWordIO(WordIO wordIO);
 
     T get(String query);
     T get(T query);

@@ -3,6 +3,7 @@ package com.quantrix.dictionary.dao;
 import com.quantrix.dictionary.domain.Word;
 import com.quantrix.dictionary.utils.FileIO;
 import com.quantrix.dictionary.utils.IO;
+import com.quantrix.dictionary.utils.WordIO;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ public class DictionaryDAO extends AbstractDAO<Word> implements IDAO<Word> {
     private Map<String, Word> dictMap;
     private static final DictionaryDAO INSTANCE = new DictionaryDAO();
     private IO fileIO;
+    private WordIO wordIO;
 
     private DictionaryDAO(){}
 
@@ -26,6 +28,11 @@ public class DictionaryDAO extends AbstractDAO<Word> implements IDAO<Word> {
 
     public void setFileIO(IO fileIO){
         this.fileIO = fileIO;
+        initDictMap();
+    }
+
+    public void setWordIO(WordIO wordIO){
+        this.wordIO = wordIO;
         initDictMap();
     }
 
@@ -91,7 +98,7 @@ public class DictionaryDAO extends AbstractDAO<Word> implements IDAO<Word> {
             return update(entity);
         } else {
             dictMap.put(entity.getWordName().toLowerCase(), entity);
-            writeToFile();
+            wordIO.deleteWord(entity);
             return entity;
         }
     }
@@ -113,7 +120,7 @@ public class DictionaryDAO extends AbstractDAO<Word> implements IDAO<Word> {
             updateInstance.setWordDefinition(entity.getWordDefinition());
             updateInstance.setDateLastUpdated(new DateTime());
             dictMap.put(entity.getWordName().toLowerCase(), updateInstance);
-            writeToFile();
+            wordIO.updateWord(updateInstance);
             return updateInstance;
         }
     }
@@ -137,8 +144,9 @@ public class DictionaryDAO extends AbstractDAO<Word> implements IDAO<Word> {
      */
     @Override
     public void delete(String query) {
+        Word word = dictMap.get(query);
         dictMap.remove(query);
-        writeToFile();
+        wordIO.deleteWord(word);
     }
 
     private void writeToFile(){
@@ -146,7 +154,7 @@ public class DictionaryDAO extends AbstractDAO<Word> implements IDAO<Word> {
     }
 
     private void initDictMap(){
-        dictMap = fileIO.loadDataFile();
+        dictMap = wordIO.getAllWords();
     }
 
     public static void main(String[] args){

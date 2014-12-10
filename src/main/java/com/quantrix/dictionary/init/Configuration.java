@@ -8,7 +8,12 @@ import com.quantrix.dictionary.service.Service;
 import com.quantrix.dictionary.service.WordService;
 import com.quantrix.dictionary.utils.FileIO;
 import com.quantrix.dictionary.utils.HttpUtils;
+import com.quantrix.dictionary.utils.WordIO;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +24,8 @@ public class Configuration {
 
     private static final String CONTENT_TYPE = "text/xml;charset=utf8";
     private static final String URL_QUERY = "http://services.aonaware.com/DictService/DictService.asmx/Define?word=";
+    private static final String DATABASE_NAME = "org.sqlite.JDBC";
+    private static final String DATABASE_CONNECTION = "jdbc:sqlite:dictionary.db";
 
     public Configuration(){}
 
@@ -30,13 +37,25 @@ public class Configuration {
         return URL_QUERY;
     }
 
-    private IDAO initDAO(){
+    private IDAO initFileDAO(){
         FileIO fileIO = FileIO.getInstance();
         IDAO idao = DictionaryDAO.getInstance();
 
         idao.setFileIO(fileIO);
 
         return idao;
+    }
+
+    private IDAO initDatabaseDAO(){
+        Connection connection = initDataSource();
+        WordIO wordIO = WordIO.getInstance();
+        wordIO.setConnection(connection);
+
+        IDAO idao = DictionaryDAO.getInstance();
+        idao.setWordIO(wordIO);
+
+        return idao;
+
     }
 
     private Service initService(IDAO idao){
@@ -52,7 +71,7 @@ public class Configuration {
     public DictionaryController initController(){
         DictionaryController dictionaryController = DictionaryController.getInstance();
 
-        IDAO idao = initDAO();
+        IDAO idao = initDatabaseDAO();
         Service service = initService(idao);
 
         HttpUtils httpUtils = initHttpUtils();
@@ -63,6 +82,21 @@ public class Configuration {
         return dictionaryController;
 
     }
+
+    private Connection initDataSource(){
+        Connection connection = null;
+
+        try {
+            Class.forName(DATABASE_NAME);
+            connection = DriverManager.getConnection(DATABASE_CONNECTION);
+            connection.setAutoCommit(false);
+        } catch (ClassNotFoundException | SQLException e ){
+            e.printStackTrace();
+        }
+
+        return connection;
+    }
+
 
     public static void main(String[] args){
         Configuration configuration = new Configuration();

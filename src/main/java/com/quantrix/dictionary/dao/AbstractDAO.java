@@ -14,8 +14,6 @@ public class AbstractDAO<T extends Serializable> {
 
     private Class<T> clazz;
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractDAO.class);
-
     public void setClazz(Class<T> clazz){
         this.clazz = clazz;
     }
