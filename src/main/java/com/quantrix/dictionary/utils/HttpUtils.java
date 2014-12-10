@@ -82,7 +82,7 @@ public class HttpUtils {
         return null;
     }
 
-    public String processDictionaryResults(HttpURLConnection connection){
+    public String processDictionaryResults(HttpURLConnection connection) {
         StringBuilder definitions = new StringBuilder();
 
         try {
@@ -95,15 +95,15 @@ public class HttpUtils {
             Node node;
             Element element;
 
-            for (int i= 0; i < nodeList.getLength(); i++){
+            for (int i = 0; i < nodeList.getLength(); i++) {
                 node = nodeList.item(i);
 
-                if (node.getNodeType() == Node.ELEMENT_NODE){
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
                     element = (Element) node;
 
                     definitionList = element.getElementsByTagName("Definition");
 
-                    for (int j = 0; j < definitionList.getLength(); j++){
+                    for (int j = 0; j < definitionList.getLength(); j++) {
                         definitions.append(definitionList.item(j).getTextContent() + "\n\n");
                     }
                 }
@@ -111,10 +111,13 @@ public class HttpUtils {
 
             return definitions.toString();
 
-        } catch (IOException | SAXException | ParserConfigurationException e){
+        } catch (UnknownHostException e) {
+            System.out.println("No internet connection available");
             e.printStackTrace();
-            return null;
+        }catch (IOException | SAXException | ParserConfigurationException e){
+            e.printStackTrace();
         }
+        return null;
     }
 
     //private test method

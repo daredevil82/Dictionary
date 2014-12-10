@@ -96,13 +96,18 @@ public class DictionaryView {
                     populateTableModel(searchResults);
 
                     String definitions = dictionaryController.getDefinitions(query);
+                    wordNameTextInput.setText(query);
+                    if (definitions != null) {
+                        if (definitions.length() > 0) {
 
-                    if (definitions != null && definitions.length() > 0) {
-                        wordNameTextInput.setText(query);
-                        wordDefinitionTextArea.setText(definitions);
-                        wordFoundFromOnlineQueryLabel.setText("Definition found online");
+                            wordDefinitionTextArea.setText(definitions);
+                            wordFoundFromOnlineQueryLabel.setText("Definition found online");
+
+                        } else {
+                            wordFoundFromOnlineQueryLabel.setText("No Matching definition found");
+                        }
                         wordFoundFromOnlineQueryLabel.setVisible(true);
-                    } else {
+                    }  else {
                         wordFoundFromOnlineQueryLabel.setText("Error with internet query");
                         wordFoundFromOnlineQueryLabel.setVisible(true);
                     }
