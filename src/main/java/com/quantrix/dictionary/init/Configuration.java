@@ -14,6 +14,8 @@ import java.util.Map;
 
 /**
  * Created by jasonjohns on 12/8/14.
+ *
+ * Adaptation of dependency injection where specified objects are instanciated and injected in appropriate locations
  */
 public class Configuration {
 

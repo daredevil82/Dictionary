@@ -14,6 +14,8 @@ import java.util.Map;
 
 /**
  * Created by jasonjohns on 12/5/14.
+ *
+ * Concrete implementation of Controller for one view GUI.
  */
 public class DictionaryController {
 

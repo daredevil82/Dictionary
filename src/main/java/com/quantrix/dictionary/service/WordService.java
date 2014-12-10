@@ -120,6 +120,9 @@ public class WordService implements Service<Word> {
                 wordResults.add(word);
         }
 
+        if (wordResults.isEmpty())
+            wordResults = new ArrayList<>(dictMap.values());
+
         return sortByEditDistance(wordResults, query);
     }
 

@@ -52,7 +52,6 @@ public class FileIO implements IO{
         ClassLoader classLoader = getClass().getClassLoader();
 
         try {
-            dataFile = new File(classLoader.getResource(DICTIONARYFILE).getFile());
             dataWriter = new FileWriter(dataFile);
 
             csvFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");
@@ -101,7 +100,7 @@ public class FileIO implements IO{
 
         try {
             //Open file connection and read stream
-            dataFile = new File(classLoader.getResource(DICTIONARYFILE).getFile());
+            dataFile = new File(DICTIONARYFILE);
             dataReader = new FileReader(dataFile);
 
             //Initialize Apache Commons CSV instances and parse the dictionary file

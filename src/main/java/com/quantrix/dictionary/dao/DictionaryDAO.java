@@ -5,14 +5,15 @@ import com.quantrix.dictionary.utils.FileIO;
 import com.quantrix.dictionary.utils.IO;
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Created by jasonjohns on 12/4/14.
+ *
+ * Concrete implementation of DAO interface, uses an implementation of com.quantrix.dictionary.utils.IO interface for
+ * actual file reading/writing
  */
-public class DictionaryDAO extends AbstractDAO<Word> implements IDAO<Word> {
+public class DictionaryDAO implements IDAO<Word> {
 
     private Map<String, Word> dictMap;
     private static final DictionaryDAO INSTANCE = new DictionaryDAO();

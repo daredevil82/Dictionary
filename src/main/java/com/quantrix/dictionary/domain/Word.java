@@ -5,6 +5,9 @@ package com.quantrix.dictionary.domain;
  *
  * Plain POJO object containing Word, Definition and a couple date time fields.
  *
+ * Includes two internal Comparator implementations for collection sorting based on word name and edit distance to
+ * a particular word.
+ *
  */
 
 import org.joda.time.DateTime;
